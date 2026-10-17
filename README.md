@@ -9,11 +9,15 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/najah-pktr/StickItUp/pulls)
 
 *Local, private, and designed to stay out of your way.*
-
 </div>
 
 ---
 
+## Preview
+
+<img width="1920" height="1032" alt="UI Preview" src="https://github.com/user-attachments/assets/d4c72f7b-7b67-4e22-83c2-f4a73447c6e4" />
+
+---
 ## Features
 
 - **Native Interface:** A clean, distraction-free UI that feels like a built-in browser tool.
