@@ -3,12 +3,56 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>StickItUP! — Sticky notes for any website</title>
+<title>StickItUP! — Annotate web pages & leave sticky notes online</title>
+<meta name="description" content="StickItUP! is a free, open-source Chrome extension to pin sticky notes, highlight articles, and annotate web pages. Perfect for researchers, students, and assignment projects. 100% local, no accounts required." />
+<meta name="keywords" content="annotate web pages, sticky notes chrome extension, leave notes on websites, web annotation tool, research notes extension, highlight web pages, open source note taking, assignment helper, local browser notes" />
+<meta name="author" content="Najah" />
+<meta name="robots" content="index, follow" />
+
+<!-- Open Graph / Social Media -->
+<meta property="og:title" content="StickItUP! — Annotate web pages & leave sticky notes online" />
+<meta property="og:description" content="Pin sticky notes directly onto any website. A free, open-source Chrome extension for research, assignments, and daily browsing. No tracking, no servers." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://najah-pktr.github.io/StickItUp/" />
+<meta property="og:image" content="https://najah-pktr.github.io/StickItUp/assets/icon128.png" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="StickItUP! — Annotate web pages & leave sticky notes online" />
+<meta name="twitter:description" content="Pin sticky notes directly onto any website. A free, open-source Chrome extension for research and assignments." />
+<meta name="twitter:image" content="https://najah-pktr.github.io/StickItUp/assets/icon128.png" />
+
 <link rel="icon" type="image/svg+xml" href="logo.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Structured Data (Tells Google exactly what this is) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "StickItUP!",
+  "operatingSystem": "Chrome, Edge",
+  "applicationCategory": "BrowserApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": "An open-source Chrome extension that allows users to pin sticky notes, highlight text, and annotate web pages directly. Ideal for assignment research and bookmarking.",
+  "author": {
+    "@type": "Person",
+    "name": "Najah",
+    "url": "https://github.com/najah-pktr"
+  },
+  "softwareVersion": "2.0.0",
+  "license": "https://github.com/najah-pktr/StickItUp/blob/main/LICENSE"
+}
+</script>
+
 <style>
+  /* Keep all your existing CSS here unchanged! */
   :root {
     --bg: #f5f5f7;
     --surface: #ffffff;
@@ -17,7 +61,6 @@
     --text-muted: #86868b;
     --accent: #007aff;
   }
-
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #1c1c1e;
@@ -28,93 +71,52 @@
       --accent: #0a84ff;
     }
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    font-size: 15px;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; font-size: 15px; -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-
-  /* Nav */
-  header {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-  }
+  header { position: sticky; top: 0; z-index: 50; background: var(--bg); border-bottom: 1px solid var(--border); }
   nav { display: flex; align-items: center; justify-content: space-between; height: 60px; }
   .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
   .brand svg { width: 16px; height: 16px; fill: var(--accent); }
   .nav-links { display: flex; align-items: center; gap: 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); }
   .nav-links a:hover { color: var(--text); }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; 
-    cursor: pointer; border: 1px solid transparent; transition: 0.15s;
-  }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: 0.15s; }
   .btn svg { width: 14px; height: 14px; fill: currentColor; }
   .btn-primary { background: var(--text); color: var(--bg); }
   .btn-primary:hover { opacity: 0.85; }
   .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
   .btn-secondary:hover { border-color: var(--text-muted); }
-
-  /* Hero */
   .hero { padding: 100px 0 80px; text-align: center; }
   .hero h1 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px; }
   .hero p { font-size: 17px; color: var(--text-muted); max-width: 520px; margin: 0 auto 32px; }
   .actions { display: flex; gap: 12px; justify-content: center; }
-
-  /* Mockup */
-  .mockup {
-    margin-top: 60px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
-    overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
-  }
+  .mockup { margin-top: 60px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
   .mockup-bar { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); }
   .mockup-dots { display: flex; gap: 6px; }
   .mockup-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
   .mockup-url { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
   .mockup-body { position: relative; height: 280px; padding: 32px; background-image: linear-gradient(var(--border) 1px, transparent 1px); background-size: 100% 40px; background-position: 0 32px; }
-  
-  .sticky {
-    position: absolute; width: 200px; padding: 12px; border-radius: 8px;
-    font-size: 13px; line-height: 1.4; color: #1d1d1f;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);
-  }
+  .sticky { position: absolute; width: 200px; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.4; color: #1d1d1f; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
   .sticky-1 { background: #fef3c7; top: 48px; right: 32px; transform: rotate(-1deg); }
   .sticky-2 { background: #e0f2fe; top: 150px; right: 140px; transform: rotate(1deg); }
-
-  /* Sections */
   section { padding: 80px 0; border-top: 1px solid var(--border); }
   h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 40px; }
-  
-  /* Features Grid */
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; }
   .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
   .feature h3 svg { width: 16px; height: 16px; fill: var(--text-muted); }
   .feature p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
-
-  /* Install */
   .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
   .steps { list-style: none; counter-reset: step; }
   .steps li { counter-increment: step; position: relative; padding: 0 0 24px 36px; font-size: 14px; color: var(--text-muted); }
   .steps li:last-child { padding-bottom: 0; }
   .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
   code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--surface); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--text); }
-  
   .install-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
   .install-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   .install-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
   .install-card .btn { width: 100%; }
-
-  /* Changelog */
   .changelog-list { max-width: 760px; }
   .release { display: grid; grid-template-columns: 120px 1fr; gap: 32px; padding: 24px 0; border-top: 1px solid var(--border); }
   .release:last-child { border-bottom: 1px solid var(--border); }
@@ -125,8 +127,6 @@
   .release ul { list-style: none; }
   .release ul li { font-size: 14px; color: var(--text-muted); padding-left: 16px; position: relative; line-height: 1.8; }
   .release ul li::before { content: ''; position: absolute; left: 2px; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); }
-
-  /* Footer */
   footer { padding: 40px 0; border-top: 1px solid var(--border); margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted); }
   .footer-links { display: flex; gap: 24px; }
   .footer-links a:hover { color: var(--text); }
@@ -154,8 +154,9 @@
 
 <div class="container">
   <div class="hero">
-    <h1>Sticky notes, on any website.</h1>
-    <p>Pin thoughts, reminders, and ideas directly onto the pages you visit. Local, private, and beautifully simple.</p>
+    <!-- SEO Heavy H1 and text block -->
+    <h1>Annotate web pages. Leave sticky notes online.</h1>
+    <p>StickItUP! is a free, open-source Chrome extension to pin notes directly onto any website. Perfect for assignment research, highlighting articles, and keeping your thoughts organized without losing context.</p>
     <div class="actions">
       <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank" class="btn btn-primary">
         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
@@ -167,17 +168,17 @@
     <div class="mockup">
       <div class="mockup-bar">
         <div class="mockup-dots"><span></span><span></span><span></span></div>
-        <div class="mockup-url">your-website.com</div>
+        <div class="mockup-url">research-paper-website.com</div>
         <div style="width: 46px;"></div>
       </div>
       <div class="mockup-body">
         <div class="sticky sticky-1">
-          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Reminder</strong>
-          Check this page again tomorrow morning.
+          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Assignment</strong>
+          Use this quote for the final project.
         </div>
         <div class="sticky sticky-2">
-          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Idea</strong>
-          Save this link for the design doc.
+          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Reminder</strong>
+          Save this link for the bibliography.
         </div>
       </div>
     </div>
@@ -186,7 +187,7 @@
 
 <div class="container">
   <section id="features">
-    <h2>Built for the way you browse.</h2>
+    <h2>Why use StickItUP for web annotation?</h2>
     <div class="grid">
       <div class="feature">
         <h3>
