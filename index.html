@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StickItUP! — Sticky notes for any website</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --border: #e5e5ea;
+    --text: #1d1d1f;
+    --text-muted: #86868b;
+    --accent: #007aff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --surface: #2c2c2e;
+      --border: #3a3a3c;
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --accent: #0a84ff;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
+  .brand svg { width: 16px; height: 16px; fill: var(--accent); }
+  .nav-links { display: flex; align-items: center; gap: 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); }
+  .nav-links a:hover { color: var(--text); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; 
+    cursor: pointer; border: 1px solid transparent; transition: 0.15s;
+  }
+  .btn svg { width: 14px; height: 14px; fill: currentColor; }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  /* Hero */
+  .hero { padding: 100px 0 80px; text-align: center; }
+  .hero h1 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px; }
+  .hero p { font-size: 17px; color: var(--text-muted); max-width: 520px; margin: 0 auto 32px; }
+  .actions { display: flex; gap: 12px; justify-content: center; }
+
+  /* Mockup */
+  .mockup {
+    margin-top: 60px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
+    overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .mockup-bar { display: flex; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .mockup-dots { display: flex; gap: 6px; }
+  .mockup-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+  .mockup-url { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .mockup-body { position: relative; height: 280px; padding: 32px; background-image: linear-gradient(var(--border) 1px, transparent 1px); background-size: 100% 40px; background-position: 0 32px; }
+  
+  .sticky {
+    position: absolute; width: 200px; padding: 12px; border-radius: 8px;
+    font-size: 13px; line-height: 1.4; color: #1d1d1f;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05);
+  }
+  .sticky-1 { background: #fef3c7; top: 48px; right: 32px; transform: rotate(-1deg); }
+  .sticky-2 { background: #e0f2fe; top: 150px; right: 140px; transform: rotate(1deg); }
+
+  /* Sections */
+  section { padding: 80px 0; border-top: 1px solid var(--border); }
+  h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 40px; }
+  
+  /* Features Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; }
+  .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .feature h3 svg { width: 16px; height: 16px; fill: var(--text-muted); }
+  .feature p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Install */
+  .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .steps { list-style: none; counter-reset: step; }
+  .steps li { counter-increment: step; position: relative; padding: 0 0 24px 36px; font-size: 14px; color: var(--text-muted); }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--surface); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: var(--text); }
+  
+  .install-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+  .install-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .install-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .install-card .btn { width: 100%; }
+
+  /* Changelog */
+  .changelog-list { max-width: 760px; }
+  .release { display: grid; grid-template-columns: 120px 1fr; gap: 32px; padding: 24px 0; border-top: 1px solid var(--border); }
+  .release:last-child { border-bottom: 1px solid var(--border); }
+  .release-meta { display: flex; flex-direction: column; gap: 4px; }
+  .release-version { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+  .release-date { font-size: 12px; color: var(--text-muted); }
+  .release-tag { display: inline-flex; align-self: flex-start; padding: 2px 6px; border-radius: 4px; background: rgba(0,122,255,0.1); color: var(--accent); font-size: 10px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+  .release ul { list-style: none; }
+  .release ul li { font-size: 14px; color: var(--text-muted); padding-left: 16px; position: relative; line-height: 1.8; }
+  .release ul li::before { content: ''; position: absolute; left: 2px; top: 11px; width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); }
+
+  /* Footer */
+  footer { padding: 40px 0; border-top: 1px solid var(--border); margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <nav>
+      <a href="#" class="brand">
+        <svg viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+        StickItUP!
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#changelog">Changelog</a>
+        <a href="https://github.com/najah-pktr/StickItUp" target="_blank">GitHub</a>
+      </div>
+      <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank" class="btn btn-primary">Download</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>Sticky notes, on any website.</h1>
+    <p>Pin thoughts, reminders, and ideas directly onto the pages you visit. Local, private, and beautifully simple.</p>
+    <div class="actions">
+      <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank" class="btn btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        Download v2.0.0
+      </a>
+      <a href="https://github.com/najah-pktr/StickItUp" target="_blank" class="btn btn-secondary">View Source</a>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="mockup-dots"><span></span><span></span><span></span></div>
+        <div class="mockup-url">your-website.com</div>
+        <div style="width: 46px;"></div>
+      </div>
+      <div class="mockup-body">
+        <div class="sticky sticky-1">
+          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Reminder</strong>
+          Check this page again tomorrow morning.
+        </div>
+        <div class="sticky sticky-2">
+          <strong style="display:block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #86868b;">Idea</strong>
+          Save this link for the design doc.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section id="features">
+    <h2>Built for the way you browse.</h2>
+    <div class="grid">
+      <div class="feature">
+        <h3>
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.1 0 2-.9 2-2v-1.5c0-.8.7-1.5 1.5-1.5H17a4 4 0 0 0 4-4c0-4.4-4-9-9-9zM6.5 12A1.5 1.5 0 1 1 8 10.5 1.5 1.5 0 0 1 6.5 12zm3-4A1.5 1.5 0 1 1 11 6.5 1.5 1.5 0 0 1 9.5 8zm5 0A1.5 1.5 0 1 1 16 6.5 1.5 1.5 0 0 1 14.5 8zm3 4A1.5 1.5 0 1 1 19 10.5 1.5 1.5 0 0 1 17.5 12z"/></svg>
+          Themes & Typography
+        </h3>
+        <p>Choose from 6 pastel backgrounds and 4 curated fonts to match your workflow.</p>
+      </div>
+      <div class="feature">
+        <h3>
+          <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+          Drag & Pin
+        </h3>
+        <p>Place notes anywhere. Resize them freely. Pin them in place so they never move.</p>
+      </div>
+      <div class="feature">
+        <h3>
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          Notes Directory
+        </h3>
+        <p>Search, preview, or delete any note from the extension dashboard.</p>
+      </div>
+      <div class="feature">
+        <h3>
+          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          Truly Private
+        </h3>
+        <p>Notes live entirely in your browser. No accounts, sync servers, or analytics.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <section id="install">
+    <h2>Install in under a minute.</h2>
+    <div class="install-grid">
+      <ol class="steps">
+        <li>Download the latest <code>.zip</code> from <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank" style="color:var(--accent);">Releases</a>.</li>
+        <li>Extract the archive to any folder on your computer.</li>
+        <li>Open <code>chrome://extensions</code> in Chrome.</li>
+        <li>Enable <strong style="color:var(--text);">Developer mode</strong> in the top-right corner.</li>
+        <li>Click <strong style="color:var(--text);">Load unpacked</strong> and select the extracted folder.</li>
+      </ol>
+
+      <div class="install-card">
+        <h3>Latest Release</h3>
+        <p>v2.0.0 • Compatible with Chrome and Edge</p>
+        <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Download v2.0.0
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <section id="changelog">
+    <h2>Changelog</h2>
+    <div class="changelog-list">
+      
+      <div class="release">
+        <div class="release-meta">
+          <div class="release-version">v2.0.0</div>
+          <div class="release-date">Latest</div>
+          <span class="release-tag">Major</span>
+        </div>
+        <ul>
+          <li>New UI: Replaced emojis with crisp, scalable SVG icons.</li>
+          <li>Refined typography, spacing, and hairline borders for a native feel.</li>
+          <li>Updated to a cleaner palette of pastel colors with improved dark mode.</li>
+          <li>Code cleanup and optimized storage syncing.</li>
+        </ul>
+      </div>
+
+      <div class="release">
+        <div class="release-meta">
+          <div class="release-version">v1.1.0</div>
+          <div class="release-date">Previous</div>
+        </div>
+        <ul>
+          <li>Added 12 theme presets.</li>
+          <li>New Notes Directory tab with search.</li>
+          <li>Export / Import JSON backups.</li>
+          <li>Initial dark mode support.</li>
+        </ul>
+      </div>
+
+      <div class="release">
+        <div class="release-meta">
+          <div class="release-version">v1.0.0</div>
+          <div class="release-date">Initial</div>
+        </div>
+        <ul>
+          <li>First public release.</li>
+          <li>Create, drag, resize, and delete sticky notes.</li>
+          <li>Local storage persistence.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <footer>
+    <div>
+      Made by <a href="https://github.com/najah-pktr" target="_blank" style="color:var(--text); font-weight:500;">Najah</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/najah-pktr/StickItUp" target="_blank">GitHub</a>
+      <a href="https://github.com/najah-pktr/StickItUp/releases/latest" target="_blank">Releases</a>
+      <a href="https://github.com/najah-pktr/StickItUp/blob/main/LICENSE" target="_blank">License</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+name: Auto Release Draft
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # If the commit is just the bot updating the version, skip running entirely
+    if: "!contains(github.event.head_commit.message, 'chore: bump version')"
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate New Version
+        id: version_bump
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
+          MAJOR=${VERSION_PARTS[0]:-1}
+          MINOR=${VERSION_PARTS[1]:-0}
+          PATCH=${VERSION_PARTS[2]:-0}
+
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          if [[ "$COMMIT_MSG" == *"MAJOR"* ]]; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif [[ "$COMMIT_MSG" == *"MINOR"* ]]; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          elif [[ "$COMMIT_MSG" == *"PATCH"* ]]; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "No version keyword found. Skipping."
+            exit 0
+          fi
+
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Update manifest.json & Push Tag
+        if: env.NEW_TAG != ''
+        run: |
+          MANIFEST_VERSION=${NEW_TAG#v}
+          jq ".version = \"$MANIFEST_VERSION\"" manifest.json > tmp.json && mv tmp.json manifest.json
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          # The [skip ci] prevents the workflow from triggering again
+          git commit -m "chore: bump version to $MANIFEST_VERSION [skip ci]"
+          git push
+          
+          # Create the tag
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+
+      - name: Create ZIP archive
+        if: env.NEW_TAG != ''
+        run: |
+          # Zips the files directly to the root of the archive so users don't get a nested folder
+          zip -r StickItUp.zip manifest.json content.js content.css popup.html popup.js assets/
+
+      - name: Create Draft Release
+        if: env.NEW_TAG != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          name: ${{ env.NEW_TAG }}
+          draft: true
+          generate_release_notes: true
+          files: StickItUp.zip

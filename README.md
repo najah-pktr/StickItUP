@@ -1,43 +1,30 @@
 <div align="center">
-  
-# 📌 StickItUP!
 
-**Premium sticky notes for any website. Beautiful, persistent, and highly customizable.**
+# StickItUP!
+
+**Pin beautiful, persistent notes directly onto any webpage.**
 
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue.svg)](https://developer.chrome.com/docs/extensions/mv3/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/najah-pktr/StickItUp/pulls)
-[![PRs Welcome](https://img.shields.io/badge/Dev-najahpktr-red.svg)](https://instagram.com/najah_pktr)
 
-*Leave thoughts, reminders, and ideas exactly where you need them — on the page itself.*
+*Local, private, and designed to stay out of your way.*
 
 </div>
 
 ---
 
-## ✨ What is StickItUP!?
+## Features
 
-Browser bookmarks and notes apps all live *somewhere else*. StickItUP! lets you pin your thoughts directly onto the page they belong to — a comment on a GitHub PR, a shopping reminder on Amazon, a study note on Wikipedia, a client brief on a design mockup.
+- **Native Interface:** A clean, distraction-free UI that feels like a built-in browser tool.
+- **Themes & Typography:** Choose from 6 pastel backgrounds and 4 curated fonts (Inter, Caveat, Lora, JetBrains Mono).
+- **Drag & Pin:** Place notes anywhere. Resize them freely. Pin them in place so they never move by accident.
+- **Notes Directory:** Search, preview, teleport to, or delete any note from the extension dashboard.
+- **Export & Import:** Back up your notes as JSON. Restore anywhere. Merge across devices in one click.
+- **100% Private:** Notes live entirely in your browser. No accounts, sync servers, or analytics.
 
-No accounts. No servers. No tracking. Everything stays in your browser.
+## Installation
 
----
-
-## 🎯 Features
-
-- **🎨 12 beautiful themes** — frosted-glass solids + gradients (Sunset Pink, Ice Blue, Warm Peach, Green Apple, and more)
-- **✍️ 5 curated fonts** — Outfit, Caveat (handwritten), Playfair Display, Fira Code, Pacifico
-- **🖱️ Drag, resize, pin, collapse** notes anywhere on any page
-- **🎚️ Per-note styling** — font, size, bold/italic/underline, alignment
-- **🔍 Notes directory** — search, preview, teleport to, or delete any note
-- **📥 Export / Import JSON** — full backup and restore
-- **🔄 Real-time sync** across all open tabs
-- **🌙 Dark mode**
-- **🔒 100% local storage** — no servers, no accounts, no analytics
-
----
-
-## 🚀 Installation
 ### Option 1 — Download from Releases (Easiest)
 
 1. Go to the [**Releases page**](https://github.com/najah-pktr/StickItUp/releases/latest)
@@ -46,10 +33,9 @@ No accounts. No servers. No tracking. Everything stays in your browser.
 4. Open Chrome and navigate to `chrome://extensions/`
 5. Enable **Developer mode** (toggle in the top-right corner)
 6. Click **Load unpacked** and select the extracted folder
-7. Pin **StickItUP!** to your toolbar and start leaving notes 🎉
+7. Pin **StickItUP!** to your toolbar and start leaving notes
 
-
-### Option 2 — Developer Mode
+### Option 2 — Clone from Source
 
 1. **Clone the repo**
    ```bash
@@ -59,78 +45,53 @@ No accounts. No servers. No tracking. Everything stays in your browser.
 2. Open Chrome and navigate to `chrome://extensions/`
 3. Enable **Developer mode** (toggle in the top-right corner)
 4. Click **Load unpacked** and select the `StickItUp` folder
-5. Pin **StickItUP!** to your toolbar and start leaving notes 🎉
 
----
-
-## 📖 Usage
+## Usage
 
 ### Adding a Note
 1. Navigate to any webpage
 2. Click the **StickItUP!** toolbar icon
-3. Hit **Add Sticky Note ✨**
+3. Hit **New Note**
 4. Start typing — saved automatically
 
 ### Customizing a Note
-- **🎨 Palette** — change background
-- **✍️ Pen** — font, size, weight, alignment
-- **📌 Pin** — lock the note in place
-- **➖ Collapse** — shrink to a slim bar
-- **🗑️ Trash** — delete the note
+- **Palette icon** — change background color
+- **Pen icon** — change font, size, weight, alignment
+- **Pin icon** — lock the note in place
+- **Collapse icon** — shrink to a slim bar
+- **Trash icon** — delete the note
 
 ### Managing All Notes
-Open the popup → **📂 My Notes** tab. Search, teleport (🚀), or delete (🗑️) any note.
+Open the popup → **Notes** tab. Search, teleport to, or delete any note.
 
 ### Backup & Restore
-**⚙️ Settings** tab → **📥 Export JSON** to back up, **📤 Import JSON** to restore.
+**Settings** tab → **Export JSON** to back up, **Import JSON** to restore.
 
-### URL Matching
-- **Exact match** (default) — note appears only on the exact URL
-- **Domain match** — note appears on every page of the same website
+## Changelog
 
----
+### v2.0.0 (Latest)
+- **New UI:** Replaced emojis with crisp, scalable SVG icons.
+- **Native Feel:** Refined typography, spacing, and hairline borders.
+- **Themes:** Updated to a cleaner palette of pastel colors and dark mode compatibility.
+- **Performance:** Code cleanup and optimized storage syncing.
 
-## 🧱 Tech Stack
+### v1.1.0
+- Added 12 theme presets.
+- New Notes Directory tab with search.
+- Export / Import JSON backups.
+- Initial dark mode support.
 
-- Manifest V3
-- Vanilla JS, HTML, CSS — no framework, no build step
-- `chrome.storage.local` for persistence
-- Google Fonts (Outfit, Caveat, Playfair Display, Fira Code, Pacifico)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome and appreciated.
-
-1. Fork the project
-2. Create your branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### v1.0.0
+- First public release.
+- Create, drag, resize, and delete sticky notes.
+- Local storage persistence.
 
 ---
 
-## 🐛 Bug Reports & Feature Requests
-
-Open an [issue](https://github.com/najah-pktr/StickItUp/issues) and include:
-- Browser & version
-- Steps to reproduce
-- Expected vs. actual behavior
-- Screenshots if possible
-
----
-
-## 📜 License
+## License
 
 Distributed under the **Mozilla Public License 2.0**. See [`LICENSE`](LICENSE) for the full text.
 
----
-
 <div align="center">
-
-**⭐ If StickItUP! made your browsing better, consider giving it a star — it helps others find it!**
-
-Made with ❤️ by [Najah](https://github.com/najah-pktr)
-
+Made with care by <a href="https://github.com/najah-pktr">Najah</a>
 </div>

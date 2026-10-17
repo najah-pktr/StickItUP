@@ -1,420 +1,273 @@
-// StickItUP! Popup Logic
-
 document.addEventListener('DOMContentLoaded', async () => {
-    // UI Elements
     const addNoteBtn = document.getElementById('addNote');
     const darkModeToggle = document.getElementById('darkModeToggle');
     const globallyHiddenToggle = document.getElementById('globallyHiddenToggle');
-    
     const totalNotesCount = document.getElementById('totalNotesCount');
     const pageNotesCount = document.getElementById('pageNotesCount');
-    
     const defaultFontFamily = document.getElementById('defaultFontFamily');
     const defaultColorTheme = document.getElementById('defaultColorTheme');
     const urlMatchSettingSelect = document.getElementById('urlMatchSetting');
-    
     const searchNotesInput = document.getElementById('searchNotesInput');
     const notesListContainer = document.getElementById('notesListContainer');
-    
     const btnExport = document.getElementById('btnExport');
     const btnImport = document.getElementById('btnImport');
     const importFileInput = document.getElementById('importFileInput');
     const btnClearAll = document.getElementById('btnClearAll');
-    const messageEl = document.getElementById('message');
+    const toast = document.getElementById('toast');
 
     let allNotes = [];
     let currentTabUrl = '';
     let currentTabId = null;
 
-    // Toast Notification helper
-    const showMessage = (msg, isError = false) => {
-        messageEl.textContent = msg;
-        messageEl.style.display = 'block';
-        messageEl.style.background = isError ? 'rgba(255, 59, 48, 0.95)' : 'rgba(52, 199, 89, 0.95)';
-        messageEl.style.color = '#ffffff';
-        setTimeout(() => { messageEl.style.display = 'none'; }, 3500);
+    const showMessage = (msg) => {
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
     };
 
-    // Tab Navigation Logic
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const viewPanels = document.querySelectorAll('.view-panel');
-
-    tabButtons.forEach(btn => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const targetTab = btn.getAttribute('data-tab');
-            
-            tabButtons.forEach(b => b.classList.remove('active'));
-            viewPanels.forEach(p => p.classList.remove('active'));
-            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById(targetTab).classList.add('active');
-
-            if (targetTab === 'tab-directory') {
-                renderNotesDirectory();
-            }
+            document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+            if (btn.getAttribute('data-tab') === 'tab-directory') renderNotesDirectory();
         });
     });
 
-    // Clean URL for lenient comparison
     const cleanUrl = (urlStr) => {
         try {
             const url = new URL(urlStr);
             return url.origin + url.pathname.replace(/\/$/, '') + url.search;
-        } catch(e) {
-            return urlStr;
-        }
+        } catch(e) { return urlStr; }
     };
 
-    // Check if a note should display on a page URL
     const shouldShowNoteOnPage = (note, pageUrl, matchSetting) => {
         if (!note.url || !pageUrl) return false;
         try {
-            const currentClean = cleanUrl(pageUrl);
-            const noteClean = cleanUrl(note.url);
-
-            if (matchSetting === 'domain') {
-                return new URL(pageUrl).origin === new URL(note.url).origin;
-            }
-            return currentClean === noteClean;
-        } catch(e) {
-            return note.url === pageUrl;
-        }
+            if (matchSetting === 'domain') return new URL(pageUrl).origin === new URL(note.url).origin;
+            return cleanUrl(pageUrl) === cleanUrl(note.url);
+        } catch(e) { return note.url === pageUrl; }
     };
 
-    // Load Initial State
     const init = async () => {
-        // Get storage values
-        const data = await chrome.storage.local.get([
-            'notes', 'darkMode', 'globallyHidden', 'urlMatchSetting', 
-            'defaultColor', 'defaultFontFamily'
-        ]);
-
+        const data = await chrome.storage.local.get(['notes', 'darkMode', 'globallyHidden', 'urlMatchSetting', 'defaultColor', 'defaultFontFamily']);
         allNotes = data.notes || [];
         
-        // Dark Mode Toggle init
-        if (data.darkMode) {
-            darkModeToggle.checked = true;
-            document.body.classList.add('dark-mode');
-        }
-
-        // Visibility Toggle init (checked means VISIBLE, globallyHidden is FALSE)
+        if (data.darkMode) { darkModeToggle.checked = true; document.body.classList.add('dark-mode'); }
         globallyHiddenToggle.checked = !data.globallyHidden;
 
-        // Customization presets init
-        if (data.urlMatchSetting) {
-            urlMatchSettingSelect.value = data.urlMatchSetting;
-        }
-        if (data.defaultFontFamily) {
-            defaultFontFamily.value = data.defaultFontFamily;
-        }
-        if (data.defaultColor) {
-            defaultColorTheme.value = data.defaultColor;
-        }
+        if (data.urlMatchSetting) urlMatchSettingSelect.value = data.urlMatchSetting;
+        if (data.defaultFontFamily) defaultFontFamily.value = data.defaultFontFamily;
+        if (data.defaultColor) defaultColorTheme.value = data.defaultColor;
 
-        // Get Active Tab Info
         try {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tab) {
-                currentTabUrl = tab.url;
-                currentTabId = tab.id;
-            }
-        } catch (err) {
-            console.error("Error querying active tab:", err);
-        }
+            if (tab) { currentTabUrl = tab.url; currentTabId = tab.id; }
+        } catch (err) {}
 
         updateStats();
     };
 
-    // Update Counts & Statistics on Home Tab
     const updateStats = () => {
         totalNotesCount.textContent = allNotes.length;
-        
         const matchSetting = urlMatchSettingSelect.value || 'exact';
-        const matchingNotes = allNotes.filter(n => shouldShowNoteOnPage(n, currentTabUrl, matchSetting));
-        pageNotesCount.textContent = matchingNotes.length;
+        pageNotesCount.textContent = allNotes.filter(n => shouldShowNoteOnPage(n, currentTabUrl, matchSetting)).length;
     };
 
-    // Render Note Directory (Tab 2)
+    const icons = {
+        teleport: `<svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`,
+        trash: `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`
+    };
+
     const renderNotesDirectory = () => {
         const query = searchNotesInput.value.toLowerCase().trim();
         notesListContainer.innerHTML = '';
 
-        const filteredNotes = allNotes.filter(note => {
+        const filtered = allNotes.filter(note => {
             const contentMatches = note.content && note.content.toLowerCase().includes(query);
             let domainMatches = false;
-            try {
-                const domain = new URL(note.url).hostname;
-                domainMatches = domain.toLowerCase().includes(query);
-            } catch (e) {}
-            
+            try { domainMatches = new URL(note.url).hostname.toLowerCase().includes(query); } catch (e) {}
             return contentMatches || domainMatches || query === '';
         });
 
-        if (filteredNotes.length === 0) {
-            notesListContainer.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📝</div>
-                    <div class="empty-text">No matching sticky notes found</div>
-                </div>
-            `;
+        if (filtered.length === 0) {
+            notesListContainer.innerHTML = `<div class="empty">No notes found</div>`;
             return;
         }
 
-        // Sort by timestamp newest first
-        filteredNotes.sort((a, b) => b.timestamp - a.timestamp);
-
-        filteredNotes.forEach(note => {
-            let hostname = 'Unknown Page';
-            let domain = '';
-            try {
-                const urlObj = new URL(note.url);
-                hostname = urlObj.hostname;
-                domain = urlObj.hostname;
-            } catch (e) {}
+        filtered.sort((a, b) => b.timestamp - a.timestamp).forEach(note => {
+            let hostname = 'Unknown';
+            try { hostname = new URL(note.url).hostname; } catch (e) {}
 
             const card = document.createElement('div');
             card.className = 'note-card';
-            card.id = `directory-note-${note.id}`;
-
-            // Embedded design line representing the color of the sticky note
-            const colorLine = document.createElement('div');
-            colorLine.className = 'note-card-border';
-            colorLine.style.background = note.color || 'rgba(255,255,255,0.85)';
-            card.appendChild(colorLine);
 
             const header = document.createElement('div');
             header.className = 'note-card-header';
 
-            const siteGroup = document.createElement('div');
-            siteGroup.className = 'note-card-site';
+            const site = document.createElement('div');
+            site.className = 'note-site';
             
-            // Render favicon
             const favicon = document.createElement('img');
-            favicon.className = 'site-favicon';
-            favicon.src = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : 'assets/icon16.png';
-            favicon.onerror = () => { favicon.src = 'assets/icon16.png'; };
+            favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${hostname}`;
+            favicon.onerror = () => { favicon.style.display = 'none'; };
             
-            const domainSpan = document.createElement('span');
-            domainSpan.textContent = hostname;
-            domainSpan.title = note.url;
+            const siteName = document.createElement('span');
+            siteName.textContent = hostname;
 
-            siteGroup.appendChild(favicon);
-            siteGroup.appendChild(domainSpan);
+            site.appendChild(favicon);
+            site.appendChild(siteName);
 
             const actions = document.createElement('div');
-            actions.className = 'note-card-actions';
+            actions.className = 'note-actions';
 
-            // Teleport / Focus tab action
-            const teleportBtn = document.createElement('button');
-            teleportBtn.className = 'action-btn';
-            teleportBtn.textContent = '🚀';
-            teleportBtn.title = 'Teleport to note website';
-            teleportBtn.addEventListener('click', async () => {
-                if (note.url) {
-                    await chrome.tabs.create({ url: note.url });
-                }
-            });
+            const teleBtn = document.createElement('button');
+            teleBtn.className = 'icon-btn';
+            teleBtn.innerHTML = icons.teleport;
+            teleBtn.title = "Go to page";
+            teleBtn.addEventListener('click', () => chrome.tabs.create({ url: note.url }));
 
-            // Delete action
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'action-btn btn-delete-card';
-            deleteBtn.textContent = '🗑️';
-            deleteBtn.title = 'Delete note';
-            deleteBtn.addEventListener('click', async () => {
-                if (confirm("Delete this sticky note?")) {
+            const delBtn = document.createElement('button');
+            delBtn.className = 'icon-btn';
+            delBtn.innerHTML = icons.trash;
+            delBtn.title = "Delete";
+            delBtn.addEventListener('click', async () => {
+                if (confirm("Delete this note?")) {
                     allNotes = allNotes.filter(n => n.id !== note.id);
                     await chrome.storage.local.set({ notes: allNotes });
                     card.remove();
                     updateStats();
-                    renderNotesDirectory();
                 }
             });
 
-            actions.appendChild(teleportBtn);
-            actions.appendChild(deleteBtn);
+            actions.appendChild(teleBtn);
+            actions.appendChild(delBtn);
 
-            header.appendChild(siteGroup);
+            header.appendChild(site);
             header.appendChild(actions);
 
             const preview = document.createElement('div');
-            if (note.content && note.content.trim()) {
-                preview.className = 'note-card-preview';
-                preview.textContent = note.content;
-            } else {
-                preview.className = 'note-card-preview empty-preview';
-                preview.textContent = 'Empty sticky note...';
-            }
+            preview.className = 'note-preview';
+            preview.textContent = note.content || 'Empty note';
 
             card.appendChild(header);
             card.appendChild(preview);
-
             notesListContainer.appendChild(card);
         });
     };
 
-    // Add Note Click Handler
     addNoteBtn.addEventListener('click', async () => {
         try {
-            if (currentTabUrl && !currentTabUrl.startsWith('chrome://') && !currentTabUrl.startsWith('about:') && !currentTabUrl.startsWith('edge://')) {
-                // If notes were globally hidden, automatically reveal them!
+            if (currentTabUrl && !currentTabUrl.startsWith('chrome://') && !currentTabUrl.startsWith('about:')) {
                 if (!globallyHiddenToggle.checked) {
                     globallyHiddenToggle.checked = true;
                     await chrome.storage.local.set({ globallyHidden: false });
                 }
-
                 await chrome.tabs.sendMessage(currentTabId, { action: 'addNote' });
-                
-                // Fetch newly added note for popup stats immediately
                 setTimeout(async () => {
                     const data = await chrome.storage.local.get(['notes']);
                     allNotes = data.notes || [];
                     updateStats();
-                    showMessage("Sticky Note Added! ✨");
+                    showMessage("Note added");
                 }, 100);
             } else {
-                showMessage("Notes cannot be added to system pages.", true);
+                showMessage("Cannot add notes here");
             }
         } catch (err) {
-            console.error("Add note message error:", err);
-            showMessage("Please refresh the page to place notes.", true);
+            showMessage("Refresh the page to add notes");
         }
     });
 
-    // Globally Hidden visibility switcher (Checked -> visible -> globallyHidden = false)
     globallyHiddenToggle.addEventListener('change', async (e) => {
-        const visible = e.target.checked;
-        await chrome.storage.local.set({ globallyHidden: !visible });
-        showMessage(visible ? "All notes revealed" : "All notes hidden");
+        await chrome.storage.local.set({ globallyHidden: !e.target.checked });
+        showMessage(e.target.checked ? "Notes visible" : "Notes hidden");
     });
 
-    // Dark Mode Toggle
     darkModeToggle.addEventListener('change', async (e) => {
-        const enabled = e.target.checked;
-        if (enabled) {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-        await chrome.storage.local.set({ darkMode: enabled });
+        document.body.classList.toggle('dark-mode', e.target.checked);
+        await chrome.storage.local.set({ darkMode: e.target.checked });
     });
 
-    // Search bar input syncing
-    searchNotesInput.addEventListener('input', () => {
-        renderNotesDirectory();
-    });
+    searchNotesInput.addEventListener('input', renderNotesDirectory);
 
-    // Select settings listeners
     defaultFontFamily.addEventListener('change', async (e) => {
         await chrome.storage.local.set({ defaultFontFamily: e.target.value });
-        showMessage("Default font preset updated!");
+        showMessage("Font updated");
     });
 
     defaultColorTheme.addEventListener('change', async (e) => {
         await chrome.storage.local.set({ defaultColor: e.target.value });
-        showMessage("Default theme preset updated!");
+        showMessage("Color updated");
     });
 
     urlMatchSettingSelect.addEventListener('change', async (e) => {
         await chrome.storage.local.set({ urlMatchSetting: e.target.value });
         updateStats();
-        showMessage("URL filter setting saved!");
+        showMessage("URL setting saved");
     });
 
-    // Export Notes logic (JSON file download)
     btnExport.addEventListener('click', () => {
-        if (allNotes.length === 0) {
-            showMessage("No notes available to export.", true);
-            return;
-        }
-        try {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allNotes, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "stickitup_backup.json");
-            dlAnchorElem.click();
-            showMessage("Backup JSON downloaded!");
-        } catch (e) {
-            showMessage("Failed to export notes.", true);
-        }
+        if (allNotes.length === 0) return showMessage("Nothing to export");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allNotes, null, 2));
+        const a = document.createElement('a');
+        a.setAttribute("href", dataStr);
+        a.setAttribute("download", "stickitup_backup.json");
+        a.click();
+        showMessage("Backup downloaded");
     });
 
-    // Import Notes logic
-    btnImport.addEventListener('click', () => {
-        importFileInput.click();
-    });
+    btnImport.addEventListener('click', () => importFileInput.click());
 
     importFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = async (event) => {
             try {
                 const importedData = JSON.parse(event.target.result);
                 if (Array.isArray(importedData)) {
-                    // Combine notes by ID avoiding duplicates
                     const existingIds = new Set(allNotes.map(n => n.id));
-                    const newNotesCount = importedData.filter(n => !existingIds.has(n.id)).length;
+                    const newCount = importedData.filter(n => !existingIds.has(n.id)).length;
+                    const merged = [...allNotes];
                     
-                    // Simple merge
-                    const mergedNotes = [...allNotes];
-                    importedData.forEach(importedNote => {
-                        // Validate basic shape
-                        if (importedNote.id && importedNote.url) {
-                            const index = mergedNotes.findIndex(n => n.id === importedNote.id);
-                            if (index !== -1) {
-                                mergedNotes[index] = importedNote; // overwrite existing
-                            } else {
-                                mergedNotes.push(importedNote); // add new
-                            }
+                    importedData.forEach(imp => {
+                        if (imp.id && imp.url) {
+                            const idx = merged.findIndex(n => n.id === imp.id);
+                            if (idx !== -1) merged[idx] = imp;
+                            else merged.push(imp);
                         }
                     });
 
-                    allNotes = mergedNotes;
+                    allNotes = merged;
                     await chrome.storage.local.set({ notes: allNotes });
                     updateStats();
-                    showMessage(`Successfully imported ${newNotesCount} new notes!`);
-                    
-                    // Refresh notes if directory is active
-                    if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') {
-                        renderNotesDirectory();
-                    }
-                } else {
-                    showMessage("Invalid backup format.", true);
+                    showMessage(`Imported ${newCount} notes`);
+                    if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') renderNotesDirectory();
                 }
             } catch (err) {
-                showMessage("Failed to parse JSON file.", true);
+                showMessage("Invalid backup file");
             }
-            importFileInput.value = ''; // clear input
+            importFileInput.value = '';
         };
         reader.readAsText(file);
     });
 
-    // Factory Reset / Clear All Notes logic
     btnClearAll.addEventListener('click', async () => {
-        if (confirm("⚠️ WARNING: This will permanently delete ALL sticky notes across ALL websites. This action cannot be undone.\n\nAre you absolutely sure?")) {
-            if (confirm("Double Confirmation: Delete all notes?")) {
-                allNotes = [];
-                await chrome.storage.local.set({ notes: [] });
-                updateStats();
-                showMessage("Factory reset completed. All notes deleted!");
-                if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') {
-                    renderNotesDirectory();
-                }
-            }
+        if (confirm("Delete ALL notes? This cannot be undone.")) {
+            allNotes = [];
+            await chrome.storage.local.set({ notes: [] });
+            updateStats();
+            showMessage("All notes deleted");
+            if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') renderNotesDirectory();
         }
     });
 
-    // Listen to storage changes to sync statistics in real-time
     chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'local') {
-            if (changes.notes) {
-                allNotes = changes.notes.newValue || [];
-                updateStats();
-                if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') {
-                    renderNotesDirectory();
-                }
-            }
+        if (area === 'local' && changes.notes) {
+            allNotes = changes.notes.newValue || [];
+            updateStats();
+            if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'tab-directory') renderNotesDirectory();
         }
     });
 
