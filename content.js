@@ -342,7 +342,7 @@ const addNewNote = async () => {
         y: 120 + (Math.random() * 60),
         width: 280,
         height: 160,
-        color: defaults.defaultColor || '#fef3c7', // default pastel yellow
+        color: defaults.defaultColor || '#1c1c1e', // default pastel yellow
         fontFamily: defaults.defaultFontFamily || "'Inter', sans-serif",
         fontSize: 14,
         isPinned: false,
